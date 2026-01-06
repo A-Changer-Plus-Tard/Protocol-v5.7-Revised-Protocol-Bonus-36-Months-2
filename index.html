@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BlockDag Protocol 5.7 | AI Enabled</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-dark: #020617; --card-dark: #0f172a; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3, h4, .font-heading { font-family: 'Space Grotesk', sans-serif; }
+        .font-code { font-family: 'Fira Code', monospace; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chart & Protocol Heights */
+        .chart-container { position: relative; width: 100%; height: 250px; }
+        .protocol-card-container { perspective: 1000px; height: 380px; cursor: pointer; } 
+        @media (min-width: 768px) { 
+            .chart-container { height: 350px; } 
+            .protocol-card-container { height: 420px; } 
+        }
+
+        /* Flip Logic */
+        .protocol-card-inner { position: relative; width: 100%; height: 100%; text-align: left; transition: transform 0.6s; transform-style: preserve-3d; }
+        .protocol-card-container:hover .protocol-card-inner,
+        .protocol-card-inner.flipped { transform: rotateY(180deg); }
+        .protocol-front, .protocol-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1rem; top: 0; left: 0; display: flex; flex-direction: column; }
+        .protocol-back { background-color: #0f172a; border: 1px solid #334155; transform: rotateY(180deg); justify-content: space-between; padding: 1.25rem; }
+
+        /* Insight Box */
+        .insight-box { padding: 10px; border-radius: 8px; margin-top: auto; border-left-width: 3px; background: rgba(255,255,255,0.03); }
+        .insight-teal { border-left-color: #14b8a6; } .insight-blue { border-left-color: #3b82f6; } .insight-red { border-left-color: #ef4444; }
+        .insight-indigo { border-left-color: #6366f1; } .insight-purple { border-left-color: #a855f7; } .insight-orange { border-left-color: #f97316; }
+
+        /* Code Block */
+        .code-display { background: #0b1120; border: 1px solid #1e293b; border-radius: 6px; padding: 10px; font-size: 0.65rem; color: #a5b4fc; overflow-x: auto; max-height: 140px; white-space: pre-wrap; }
+
+        /* --- BUTTON STYLES --- */
+        .ai-button-sm { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #a5b4fc; padding: 8px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+        .ai-button-sm:hover { background: rgba(255,255,255,0.1); color: white; border-color: #a5b4fc; }
+
+        .ai-button-primary { background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); background-size: 200% 200%; animation: gradient-xy 3s ease infinite; color: white; padding: 10px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; z-index: 10; }
+        .ai-button-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6); border-color: rgba(255, 255, 255, 0.3); }
+        .ai-button-primary::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(transparent, rgba(255,255,255,0.2), transparent); transform: rotate(45deg); animation: shine 3s infinite; pointer-events: none; }
+
+        @keyframes gradient-xy { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 20% { transform: translateX(100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+        
+        .loading-spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #6366f1; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #aiModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        .modal-content { background: #1e293b; margin: 15% auto; padding: 1px; width: 90%; max-width: 500px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #14b8a6); }
+        .modal-inner { background: #0f172a; padding: 24px; border-radius: 15px; color: #e2e8f0; max-height: 70vh; overflow-y: auto; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -7px; border: 2px solid #fff; box-shadow: 0 0 10px #6366f1; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
+    </style>
+</head>
+<body class="antialiased selection:bg-indigo-500 selection:text-white">
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+
+        <!-- HEADER -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[10px] font-bold uppercase tracking-widest mb-4">
+                Official Launch Protocol v5.7
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-heading">
+                BlockDag <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Strategic Tokenomics</span>
+            </h1>
+            <p class="text-sm md:text-base text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                The "3% Solvency Strategy": A mathematical approach to vesting, migration, and contingency protocols designed to prioritize early investor value.
+            </p>
+        </div>
+
+        <!-- 2. EXPECTED COIN LAUNCH BREAKDOWN -->
+        <div class="glass-card rounded-2xl p-8 mb-16 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
+            <h2 class="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Expected Coin Launch Breakdown (Day 1)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="space-y-4">
+                    <div><p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Total Presale Coins</p><p class="text-2xl font-bold text-white font-mono">50 Billion</p></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><p class="text-[10px] text-slate-500 uppercase font-bold">Bonus (Locked)</p><p class="text-lg font-bold text-orange-400 font-mono">30B</p></div>
+                        <div><p class="text-[10px] text-slate-500 uppercase font-bold">Non-Bonus</p><p class="text-lg font-bold text-teal-400 font-mono">20B</p></div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div><p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Launch Price</p><p class="text-2xl font-bold text-emerald-400 font-mono">$0.05</p></div>
+                     <div><p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Unlocked at Launch (3%)</p><p class="text-2xl font-bold text-white font-mono">600 Million <span class="text-sm text-slate-500 font-normal">BDAG</span></p></div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20"><p class="text-xs text-indigo-300 uppercase tracking-wider font-bold">Est. Market Cap</p><p class="text-3xl font-bold text-white font-mono">$30,000,000</p></div>
+                    <div><p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Est. CMC Ranking</p><p class="text-lg font-bold text-purple-400 font-mono">Top ~600</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SOLVENCY & SCHEDULE -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-16">
+            <!-- Left: Scenario C -->
+            <div class="lg:col-span-7 glass-card rounded-2xl p-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl"></div>
+                <div class="inline-block px-2 py-1 mb-3 bg-teal-500/10 text-teal-300 rounded text-[10px] font-bold uppercase tracking-wider">Scenario C</div>
+                <h2 class="text-xl font-bold text-white mb-4">The "3% Solvency Protocol"</h2>
+                <p class="text-slate-300 text-sm mb-6 leading-relaxed">
+                    With a 3% unlock of the Non-Bonus pool, the sell pressure becomes mathematically smaller than the liquidity pool. <strong>Solvency > Pressure.</strong>
+                </p>
+                <div class="bg-slate-900/50 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
+                    <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-slate-400">3% TGE Unlock (20B Pool):</span> <span class="font-mono text-white">600,000,000 BDAG</span></div>
+                    <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-slate-400">Listing Price:</span> <span class="font-mono text-white">$0.05</span></div>
+                    <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-slate-400">Maximum Sell Pressure:</span> <span class="font-mono text-red-400">$30,000,000</span></div>
+                    <div class="flex justify-between pt-1"><span class="text-teal-400 font-bold">Total Liquidity Pool:</span> <span class="font-mono text-teal-400 font-bold">$32,000,000</span></div>
+                </div>
+            </div>
+
+            <!-- Right: Schedule Structure -->
+            <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-center">
+                <h3 class="text-lg font-bold text-white mb-6">The Schedule Structure</h3>
+                <div class="space-y-6 relative pl-6 border-l border-slate-700 ml-2">
+                    <div class="relative">
+                        <div class="absolute -left-[29px] top-0 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-slate-900"></div>
+                        <h4 class="text-blue-400 text-xs font-bold uppercase">01 TGE (Day 1)</h4>
+                        <p class="text-white font-bold text-sm">3% Unlock</p>
+                        <p class="text-slate-400 text-[10px]">600M Tokens released. Investors get a small "taste" of liquidity.</p>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute -left-[29px] top-0 w-3 h-3 rounded-full bg-slate-600 ring-4 ring-slate-900"></div>
+                        <h4 class="text-slate-500 text-xs font-bold uppercase">02 Month 1-3</h4>
+                        <p class="text-slate-300 font-bold text-sm">The Cliff (Pause)</p>
+                        <p class="text-slate-400 text-[10px]">NO new releases. 90-day pause allows X10/X30 miners to be delivered.</p>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute -left-[29px] top-0 w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-slate-900"></div>
+                        <h4 class="text-emerald-500 text-xs font-bold uppercase">03 Month 4-24</h4>
+                        <p class="text-white font-bold text-sm">Linear Vesting</p>
+                        <p class="text-slate-400 text-[10px]">Remaining 97% released daily/weekly (~4.6% per month) over 21 months.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. VESTING CHART -->
+        <div class="glass-card rounded-2xl p-5 mb-16">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                <div><h2 class="text-lg font-bold text-white">Supply Release Schedule</h2><p class="text-slate-400 text-xs">48-Month Emission Curve</p></div>
+                <div class="flex flex-wrap justify-center gap-2 text-[10px] font-bold uppercase">
+                    <button onclick="toggleDataset(0)" class="flex items-center gap-1 text-teal-400 px-2 py-1 rounded bg-teal-500/10 border border-teal-500/20"><span class="w-2 h-2 rounded-full bg-teal-500"></span> Non-Bonus</button>
+                    <button onclick="toggleDataset(1)" class="flex items-center gap-1 text-yellow-400 px-2 py-1 rounded bg-yellow-500/10 border border-yellow-500/20"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Team</button>
+                    <button onclick="toggleDataset(2)" class="flex items-center gap-1 text-orange-400 px-2 py-1 rounded bg-orange-500/10 border border-orange-500/20"><span class="w-2 h-2 rounded-full border border-dashed border-orange-500 bg-transparent"></span> Bonus</button>
+                    <button onclick="toggleDataset(3)" class="flex items-center gap-1 text-blue-400 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20"><span class="w-2 h-2 rounded-full bg-blue-500"></span> X1/Tap</button>
+                    <button onclick="toggleDataset(4)" class="flex items-center gap-1 text-pink-400 px-2 py-1 rounded bg-pink-500/10 border border-pink-500/20"><span class="w-2 h-2 rounded-full bg-pink-500"></span> X30/X100</button>
+                </div>
+            </div>
+            <div class="chart-container"><canvas id="vestingChart"></canvas></div>
+        </div>
+
+        <!-- 5. THE 6 PROTOCOLS -->
+        <div class="mb-16">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-white font-heading">Contingency Protocols: The 6 Pillars</h2>
+                <div class="flex justify-center items-center gap-2 mt-2"><span class="animate-bounce text-xl">👆</span><p class="text-indigo-400 text-xs uppercase font-bold tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/30">Tap Card to Flip & Verify</p></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- P1 -->
+                <div class="protocol-card-container" onclick="flipCard(this)"><div class="protocol-card-inner"><div class="protocol-front glass-card p-6 border-t-4 border-t-teal-500 flex flex-col"><div class="flex justify-between items-start mb-3"><span class="text-3xl">🛡️</span><span class="text-xs font-bold text-teal-500 uppercase bg-teal-500/10 px-2 py-1 rounded">Protocol 01</span></div><h3 class="text-lg font-bold text-white mb-2">Oracle Price Gate</h3><p class="text-slate-300 text-sm leading-relaxed mb-4 flex-grow"><strong>Standard Operation:</strong> Vesting only occurs if the market price stays above the listing price of <strong>$0.05</strong>. Smart contracts use Chainlink Oracles to verify price before any block release.</p><div class="insight-box insight-teal"><p class="text-xs uppercase font-bold text-teal-400 mb-1">Strategic Insight</p><p class="text-sm text-slate-300 italic">"Prevents value extraction. We cannot 'cash out' unless the public investor is in profit."</p></div></div><div class="protocol-back"><div><h4 class="text-sm font-bold text-teal-400 uppercase mb-2">Solidity Logic</h4><div class="code-display font-code" id="code-p1">modifier checkPrice() { uint256 price = oracle.latestAnswer(); require(price >= 500, "Wait for $0.05"); _; } if(now > tge + 1825 days) enableBurn();</div></div><button onclick="event.stopPropagation(); auditCode('Oracle Price Gate', document.getElementById('code-p1').innerText)" class="ai-button-sm">✨ AI Audit</button></div></div></div>
+                <!-- P2 -->
+                <div class="protocol-card-container" onclick="flipCard(this)"><div class="protocol-card-inner"><div class="protocol-front glass-card p-6 border-t-4 border-t-blue-500 flex flex-col"><div class="flex justify-between items-start mb-3"><span class="text-3xl">⛏️</span><span class="text-xs font-bold text-blue-500 uppercase bg-blue-500/10 px-2 py-1 rounded">Protocol 02</span></div><h3 class="text-lg font-bold text-white mb-2">Mining Emission Cap</h3><p class="text-slate-300 text-sm leading-relaxed mb-4 flex-grow"><strong>Inflation Control:</strong> Prevents miners from flooding the market. Emissions are strictly capped at <strong>20% of daily volume</strong> to ensure sustainability and support price stability.</p><div class="insight-box insight-blue"><p class="text-xs uppercase font-bold text-blue-400 mb-1">Strategic Insight</p><p class="text-sm text-slate-300 italic">"Prevents 'Hyper-Inflation'. Supply can never mathematically overwhelm demand."</p></div></div><div class="protocol-back"><div><h4 class="text-sm font-bold text-blue-400 uppercase mb-2">Solidity Logic</h4><div class="code-display font-code" id="code-p2">function _mintMinerReward(address to) internal { uint256 vol = oracle.get24hVolume(); uint256 cap = vol * 20 / 100; require(dailyMint + amount <= cap); _mint(to, amount); }</div></div><button onclick="event.stopPropagation(); auditCode('Mining Cap', document.getElementById('code-p2').innerText)" class="ai-button-sm">✨ AI Audit</button></div></div></div>
+                <!-- P3 -->
+                <div class="protocol-card-container" onclick="flipCard(this)"><div class="protocol-card-inner"><div class="protocol-front glass-card p-6 border-t-4 border-t-red-500 flex flex-col"><div class="flex justify-between items-start mb-3"><span class="text-3xl">🛑</span><span class="text-xs font-bold text-red-500 uppercase bg-red-500/10 px-2 py-1 rounded">Protocol 03</span></div><h3 class="text-lg font-bold text-white mb-2">Emergency Brake</h3><p class="text-slate-300 text-sm leading-relaxed mb-4 flex-grow"><strong>Crisis Management:</strong> If price falls below the survival threshold of <strong>$0.02</strong>, all vesting contracts pause immediately. This protects the liquidity pool from being drained during severe bear markets.</p><div class="insight-box insight-red"><p class="text-xs uppercase font-bold text-red-400 mb-1">Strategic Insight</p><p class="text-sm text-slate-300 italic">"Protects Liquidity Pool from being drained during a 'Black Swan' event."</p></div></div><div class="protocol-back"><div><h4 class="text-sm font-bold text-red-400 uppercase mb-2">Solidity Logic</h4><div class="code-display font-code" id="code-p3">function _beforeTransfer() internal view { uint price = oracle.latestAnswer(); if (price < 200) revert("Price < $0.02. Protected."); }</div></div><button onclick="event.stopPropagation(); auditCode('Emergency Brake', document.getElementById('code-p3').innerText)" class="ai-button-sm">✨ AI Audit</button></div></div></div>
+                <!-- P4 -->
+                <div class="protocol-card-container" onclick="flipCard(this)"><div class="protocol-card-inner"><div class="protocol-front glass-card p-6 border-t-4 border-t-indigo-500 flex flex-col"><div class="flex justify-between items-start mb-3"><span class="text-3xl">💧</span><span class="text-xs font-bold text-indigo-500 uppercase bg-indigo-500/10 px-2 py-1 rounded">Protocol 04</span></div><h3 class="text-lg font-bold text-white mb-2">Volume Pegging</h3><p class="text-slate-300 text-sm leading-relaxed mb-4 flex-grow"><strong>Dynamic Recovery:</strong> If the $0.05 target is missed but price is > $0.02, tokens release via a dynamic drip capped at <strong>2% of the 24h trading volume</strong>. This allows exits with zero price impact.</p><div class="insight-box insight-indigo"><p class="text-xs uppercase font-bold text-indigo-400 mb-1">Strategic Insight</p><p class="text-sm text-slate-300 italic">"Allows 'Soft Exits'. Large holders can exit without crashing the price."</p></div></div><div class="protocol-back"><div><h4 class="text-sm font-bold text-indigo-400 uppercase mb-2">Solidity Logic</h4><div class="code-display font-code" id="code-p4">function getSellLimit() public view returns (uint) { if (price < target) return oracle.get24hVolume() * 2 / 100; return type(uint256).max; }</div></div><button onclick="event.stopPropagation(); auditCode('Volume Pegging', document.getElementById('code-p4').innerText)" class="ai-button-sm">✨ AI Audit</button></div></div></div>
+                <!-- P5 -->
+                <div class="protocol-card-container" onclick="flipCard(this)"><div class="protocol-card-inner"><div class="protocol-front glass-card p-6 border-t-4 border-t-purple-500 flex flex-col"><div class="flex justify-between items-start mb-3"><span class="text-3xl">🏛️</span><span class="text-xs font-bold text-purple-500 uppercase bg-purple-500/10 px-2 py-1 rounded">Protocol 05</span></div><h3 class="text-lg font-bold text-white mb-2">DAO Consensus</h3><p class="text-slate-300 text-sm leading-relaxed mb-4 flex-grow"><strong>Governance Fallback:</strong> In prolonged stagnation, control of the Locked Treasury reverts to the community. Token holders vote to either burn the remaining supply or redeploy it for marketing to reignite growth.</p><div class="insight-box insight-purple"><p class="text-xs uppercase font-bold text-purple-400 mb-1">Strategic Insight</p><p class="text-sm text-slate-300 italic">"Eliminates 'Rug Pull' risk. Community inherits protocol if team fails."</p></div></div><div class="protocol-back"><div><h4 class="text-sm font-bold text-purple-400 uppercase mb-2">Solidity Logic</h4><div class="code-display font-code" id="code-p5">if (stagnation > 180 days) { admin = daoAddress; emit GovernanceShift(daoAddress); }</div></div><button onclick="event.stopPropagation(); auditCode('DAO Consensus', document.getElementById('code-p5').innerText)" class="ai-button-sm">✨ AI Audit</button></div></div></div>
+                <!-- P6 -->
+                <div class="protocol-card-container" onclick="flipCard(this)"><div class="protocol-card-inner"><div class="protocol-front glass-card p-6 border-t-4 border-t-orange-500 flex flex-col"><div class="flex justify-between items-start mb-3"><span class="text-3xl">🔥</span><span class="text-xs font-bold text-orange-500 uppercase bg-orange-500/10 px-2 py-1 rounded">Protocol 06</span></div><h3 class="text-lg font-bold text-white mb-2">DAO Consensus Ultimatum</h3><p class="text-slate-300 text-sm leading-relaxed mb-4 flex-grow"><strong>The "Value Burn":</strong> If the target price ($0.05) is not met by Month 36, the DAO automatically triggers the Ultimatum: all unvested Bonus & Team tokens are permanently burned. This creates an instant supply shock.</p><div class="insight-box insight-orange"><p class="text-xs uppercase font-bold text-orange-400 mb-1">Strategic Insight</p><p class="text-sm text-slate-300 italic">"The ultimate accountability. We succeed together, or the team pays the price."</p></div></div><div class="protocol-back"><div><h4 class="text-sm font-bold text-orange-400 uppercase mb-2">Solidity Logic</h4><div class="code-display font-code" id="code-p6">function triggerUltimatum() external { if (block.timestamp > tge + 1825 days && price < 500) executeDAOAction(); }</div></div><button onclick="event.stopPropagation(); auditCode('DAO Ultimatum', document.getElementById('code-p6').innerText)" class="ai-button-sm">✨ AI Audit</button></div></div></div>
+            </div>
+        </div>
+
+        <!-- 6. SUMMARY -->
+        <div class="glass-card rounded-2xl overflow-hidden mb-16">
+            <div class="p-4 border-b border-white/5 bg-slate-900/50"><h2 class="text-lg font-bold text-white">Proposed Tokenomics Summary</h2></div>
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-800 text-slate-400 uppercase font-bold"><tr><th class="px-6 py-3">Allocation</th><th class="px-6 py-3">TGE</th><th class="px-6 py-3">Cliff</th><th class="px-6 py-3">Vesting</th><th class="px-6 py-3">Note</th></tr></thead>
+                    <tbody class="divide-y divide-slate-700/50">
+                        <tr class="hover:bg-white/5"><td class="px-6 py-3 font-bold text-white">Non-Bonus</td><td class="px-6 py-3 text-teal-400">3%</td><td class="px-6 py-3">3 Months</td><td class="px-6 py-3">21 Months</td><td class="px-6 py-3 text-slate-500">Public Safety Lane.</td></tr>
+                        <tr class="hover:bg-white/5"><td class="px-6 py-3 font-bold text-yellow-400">Team Tokens</td><td class="px-6 py-3 text-slate-500">0%</td><td class="px-6 py-3 text-white">24 Months</td><td class="px-6 py-3 text-white">12 Months</td><td class="px-6 py-3 text-slate-500">High Accountability.</td></tr>
+                        <tr class="hover:bg-white/5"><td class="px-6 py-3 font-bold text-orange-400">Bonus Tokens</td><td class="px-6 py-3 text-slate-500">0%</td><td class="px-6 py-3">12 Months</td><td class="px-6 py-3">24 Months</td><td class="px-6 py-3 text-slate-500">Strict 1-Year lock.</td></tr>
+                        <tr class="hover:bg-white/5"><td class="px-6 py-3 font-bold text-blue-400">X1 / Tap Miner</td><td class="px-6 py-3 text-slate-500 font-bold">0%</td><td class="px-6 py-3">24 Months</td><td class="px-6 py-3">24 Months</td><td class="px-6 py-3 text-slate-500">Long-term commitment.</td></tr>
+                        <tr class="hover:bg-white/5"><td class="px-6 py-3 font-bold text-pink-400">X30 / X100 Miner</td><td class="px-6 py-3 text-slate-500 font-bold">0%</td><td class="px-6 py-3 font-bold text-white">3 Months</td><td class="px-6 py-3 text-white">None</td><td class="px-6 py-3 text-slate-500">Immediate Liquidity post-cliff.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="md:hidden space-y-3 p-4">
+                <div class="bg-slate-800/50 p-3 rounded-lg border-l-4 border-teal-500 border-white/5"><div class="flex justify-between mb-1"><span class="text-white font-bold text-sm">Non-Bonus</span> <span class="text-teal-400 font-bold text-xs">3% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 3m &bull; Vesting: 21m</div></div>
+                <div class="bg-yellow-900/10 p-3 rounded-lg border-l-4 border-yellow-500 border-yellow-500/20"><div class="flex justify-between mb-1"><span class="text-yellow-400 font-bold text-sm">Team Tokens</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 12m</div></div>
+                <div class="bg-orange-900/10 p-3 rounded-lg border-l-4 border-orange-500 border-orange-500/20"><div class="flex justify-between mb-1"><span class="text-orange-400 font-bold text-sm">Bonus Tokens</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 12m &bull; Vesting: 24m</div></div>
+                <div class="bg-blue-900/10 p-3 rounded-lg border-l-4 border-blue-500 border-blue-500/20"><div class="flex justify-between mb-1"><span class="text-blue-400 font-bold text-sm">X1 / Tap Miner</span> <span class="text-slate-500 font-bold text-sm">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 24m</div></div>
+                <div class="bg-pink-900/10 p-3 rounded-lg border-l-4 border-pink-500 border-pink-500/20"><div class="flex justify-between mb-1"><span class="text-pink-400 font-bold text-sm">X30 / X100</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 3m &bull; Vesting: None</div></div>
+            </div>
+        </div>
+
+        <!-- 7. SIMULATION & LIQUIDITY -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-16">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div><h3 class="text-lg font-bold text-white">User Migration Mechanics</h3><p class="text-xs text-slate-300">The "Flywheel" Effect</p></div>
+                    <button onclick="generateStrategy()" class="ai-button-primary"><span>✨ AI Forecast</span></button>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-sm text-slate-300 leading-relaxed">We have a user base of <strong>3.5 Million Active Users</strong> (X1 & Tap Miners). To migrate, users must hold 7,500 BDAG. This turns the user base into a massive buy wall.</p>
+                    <div><div class="flex justify-between text-xs text-white font-mono"><span class="text-slate-400">Migrating Users</span><span id="minerCountDisplay">50,000</span></div><input type="range" id="minerSlider" min="10000" max="3500000" step="10000" value="50000" class="w-full"></div>
+                    <div class="flex gap-2 text-[10px]"><button onclick="setPriceBasis('presale')" id="btnPresale" class="flex-1 px-3 py-2 rounded bg-indigo-600 text-white">Presale ($0.0133)</button><button onclick="setPriceBasis('launch')" id="btnLaunch" class="flex-1 px-3 py-2 rounded bg-slate-800 text-white">Launch ($0.05)</button></div>
+                    <div class="grid grid-cols-2 gap-4 mt-2"><div class="bg-indigo-500/10 p-3 rounded border border-indigo-500/20"><p class="text-xs text-indigo-300 uppercase font-bold">Buy Pressure</p><p class="text-lg font-bold text-white" id="buyVolumeDisplay">$5.0M</p></div><div class="bg-slate-800/50 p-3 rounded border border-slate-700"><p class="text-xs text-slate-400 uppercase font-bold">Locked Supply</p><p class="text-lg font-bold text-slate-200" id="lockedTokensDisplay">375M</p><p class="text-[10px] text-teal-400 mt-1" id="lockedTokensValue">~$5.0M Value</p></div></div>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-white">Liquidity Retention</h3><span class="text-[10px] bg-teal-500/20 text-teal-300 px-2 py-1 rounded">40% APY</span></div>
+                <div class="space-y-4">
+                    <p class="text-sm text-slate-300 italic">"Is the risk of selling worth giving up a guaranteed 40% gain?"</p>
+                    <div class="flex gap-2 text-xs"><button id="plan3m" onclick="selectStaking(3)" class="flex-1 py-2 rounded bg-slate-800 text-slate-300 border border-slate-700">3 Mo (25%)</button><button id="plan6m" onclick="selectStaking(6)" class="flex-1 py-2 rounded bg-teal-600 text-white shadow-lg">6 Mo (40%)</button></div>
+                    <div class="flex justify-between items-center border-t border-white/5 pt-3"><span class="text-xs text-slate-400">Input Amount</span><input type="number" id="stakingAmount" value="10000" class="bg-transparent text-white text-right w-24 outline-none font-mono text-sm border-b border-white/20 pb-1"></div>
+                    <div class="flex justify-between items-center"><span class="text-xs text-slate-400">Total Value</span><span class="text-lg font-bold text-teal-400 font-mono" id="totalValue">11,000 BDAG</span><span id="stakingEarnings" class="hidden"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. FINAL VERDICT -->
+        <div class="glass-card rounded-2xl p-8 text-center relative overflow-hidden mb-12">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-teal-500"></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 font-heading">Final Verdict: Why This Model is Unbeatable</h2>
+            <p class="text-lg text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed">Most crypto launches rely on "Hope" and "Hype." We rely on <strong>Math</strong>. By inverting the liquidity-to-supply ratio, we effectively remove the possibility of a bank run on Day 1.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+                <div class="p-6 rounded-xl border border-red-500/20 bg-red-500/5"><h4 class="text-red-400 font-bold text-sm mb-4">Traditional Launch (High Risk)</h4><ul class="text-sm text-slate-400 space-y-3"><li class="flex gap-2"><span class="text-red-500 font-bold">✕</span> High TGE (10-20%) dumps price instantly.</li><li class="flex gap-2"><span class="text-red-500 font-bold">✕</span> Insufficient liquidity to absorb selling.</li><li class="flex gap-2"><span class="text-red-500 font-bold">✕</span> Team/Bonus tokens vest early.</li><li class="flex gap-2"><span class="text-red-500 font-bold">✕</span> No automated "Burn" mechanism.</li></ul></div>
+                <div class="p-6 rounded-xl border border-teal-500/20 bg-teal-500/5"><h4 class="text-teal-400 font-bold text-sm mb-4">BlockDag Protocol (Calculated Safety)</h4><ul class="text-sm text-slate-200 space-y-3"><li class="flex gap-2"><span class="text-teal-400 font-bold">✓</span> <strong>Guaranteed Solvency:</strong> Pressure < Liquidity.</li><li class="flex gap-2"><span class="text-teal-400 font-bold">✓</span> <strong>Priority Access:</strong> 1 Year exclusivity for paid investors.</li><li class="flex gap-2"><span class="text-teal-400 font-bold">✓</span> <strong>Smart Contract Protection:</strong> Oracle-driven locks ensure team doesn't profit unless price > $0.05.</li><li class="flex gap-2"><span class="text-teal-400 font-bold">✓</span> <strong>Self-Sustaining:</strong> Day 1 viability without relying on external market conditions.</li></ul></div>
+            </div>
+            <div class="mt-10 p-6 bg-slate-900/50 rounded-xl border-l-4 border-teal-500 border-white/5 text-left max-w-3xl mx-auto"><h4 class="text-teal-500 font-bold text-sm uppercase tracking-widest mb-2">The Ultimate Safety Net</h4><p class="text-base text-slate-300 leading-relaxed">By implementing the <strong>3% Solvency Protocol</strong>, we ensure that even in the absolute worst-case scenario (100% sell-off), the project remains solvent. Combined with the <strong>Smart Contract Price Gate</strong>, we guarantee that the team and bonus hunters cannot extract value until the public investor has seen a 3.7x return ($0.0133 -> $0.05). This aligns incentives perfectly: We don't win unless you win first.</p></div>
+        </div>
+
+    </div>
+
+    <!-- AI Modal -->
+    <div id="aiModal"><div class="modal-content"><div class="modal-inner"><div class="flex justify-between items-center mb-4"><h3 id="modalTitle" class="text-white font-bold">✨ Analysis</h3><span onclick="closeModal()" class="text-white cursor-pointer text-xl">&times;</span></div><div id="modalBody" class="text-sm text-slate-300"></div></div></div></div>
+
+    <script>
+        const apiKey = "AIzaSyCBa4u0Kx3rQ0vFVWa_GzoBBbLUxM5MurE"; 
+        Chart.defaults.color = '#94a3b8'; Chart.defaults.borderColor = '#334155';
+        
+        // Data generation
+        const labels = ['TGE', '6m', '12m', '18m', '24m', '30m', '36m', '42m', '48m'];
+        function genLine(s, d) { return [0,6,12,18,24,30,36,42,48].map(m => (m<=s)?0:(m>=s+d)?100:Math.round(((m-s)/d)*100)); }
+
+        // Data Config - UPDATED FOR 5.7
+        const nonBonus = [3, 17, 45, 74, 100, 100, 100, 100, 100];
+        // Team: 24m Lock, 12m Vest. Start m24, End m36.
+        const teamData = [0, 0, 0, 0, 0, 50, 100, 100, 100]; // Solid Yellow
+        
+        // Bonus: 12m Lock, 24m Vest. Ends at 36m.
+        // TGE(0)=0, 6=0, 12=0, 18=25, 24=50, 30=75, 36=100, 42=100, 48=100
+        const bonusData = [0, 0, 0, 25, 50, 75, 100, 100, 100]; // Dashed Orange
+
+        // X1/Tap: 24m Lock, 24m Vest. Start m24, End m48.
+        const x1Data = [0, 0, 0, 0, 0, 25, 50, 75, 100]; // Blue
+        // X30: 3m Cliff, then 100%. (0 at 0, 100 at 6m - Straight up)
+        const x30Data = [0, 100, 100, 100, 100, 100, 100, 100, 100]; // Pink
+
+        let chart;
+        function initChart() {
+            chart = new Chart(document.getElementById('vestingChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Non-Bonus', data: nonBonus, borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,0.1)', fill: true, borderWidth: 2 },
+                        { label: 'Team', data: teamData, borderColor: '#eab308', borderWidth: 2, tension: 0.2 }, // Solid Yellow
+                        { label: 'Bonus', data: bonusData, borderColor: '#f97316', borderWidth: 2, borderDash: [5,5], tension: 0.2 }, // Orange Dashed
+                        { label: 'X1/Tap', data: x1Data, borderColor: '#3b82f6', borderWidth: 2, tension: 0.2 }, // Blue
+                        { label: 'X30/X100', data: x30Data, borderColor: '#ec4899', borderWidth: 2, tension: 0 } // Solid Pink
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: (c) => c.dataset.label + ': ' + c.raw + '%' } } },
+                    scales: { y: { beginAtZero: true, max: 105, grid: { color: '#1e293b' } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+        function toggleDataset(i) { chart.data.datasets[i].hidden = !chart.data.datasets[i].hidden; chart.update(); }
+
+        // Flip Logic
+        function flipCard(el) { el.querySelector('.protocol-card-inner').classList.toggle('flipped'); }
+
+        // Simulation
+        let price = 0.0133;
+        function setPriceBasis(t) { 
+            price = t==='presale'?0.0133:0.05; 
+            document.getElementById('btnPresale').className = t==='presale'?"flex-1 px-3 py-2 rounded bg-indigo-600 text-white":"flex-1 px-3 py-2 rounded bg-slate-700 text-white";
+            document.getElementById('btnLaunch').className = t==='launch'?"flex-1 px-3 py-2 rounded bg-indigo-600 text-white":"flex-1 px-3 py-2 rounded bg-slate-700 text-white";
+            updateMinerCalc();
+        }
+        function updateMinerCalc() {
+            const v = document.getElementById('minerSlider').value;
+            document.getElementById('minerCountDisplay').innerText = parseInt(v).toLocaleString();
+            
+            // Calculate Locked Supply Dynamically
+            const tokensLocked = v * 7500;
+            const lockedStr = tokensLocked >= 1e6 ? (tokensLocked/1e6).toFixed(1)+'M' : tokensLocked.toLocaleString();
+            document.getElementById('lockedTokensDisplay').innerText = lockedStr;
+
+            const valLocked = tokensLocked * price;
+            const valStr = valLocked >= 1e6 ? '~$'+(valLocked/1e6).toFixed(1)+'M Value' : '~$'+Math.round(valLocked).toLocaleString()+' Value';
+            document.getElementById('lockedTokensValue').innerText = valStr;
+        }
+
+        // Staking
+        let apy=40, mos=6;
+        function selectStaking(m) {
+            mos=m; apy = m===3?25:40;
+            document.getElementById('plan3m').className = m===3?"flex-1 py-2 rounded bg-teal-600 text-white shadow-lg":"flex-1 py-2 rounded bg-slate-800 text-slate-300 border border-slate-700";
+            document.getElementById('plan6m').className = m===6?"flex-1 py-2 rounded bg-teal-600 text-white shadow-lg":"flex-1 py-2 rounded bg-slate-800 text-slate-300 border border-slate-700";
+            calcStake();
+        }
+        function calcStake() {
+            const amt = document.getElementById('stakingAmount').value;
+            const earn = amt * (apy/100) * (mos/12);
+            document.getElementById('stakingEarnings').innerText = '+'+Math.round(earn).toLocaleString() + ' BDAG';
+            document.getElementById('totalValue').innerText = Math.round(parseFloat(amt)+earn).toLocaleString() + ' BDAG';
+        }
+
+        // AI
+        async function callGemini(txt, title) {
+            const m = document.getElementById('aiModal'); m.style.display='block';
+            document.getElementById('modalTitle').innerHTML = `✨ ${title}`;
+            document.getElementById('modalBody').innerHTML = '<div class="loading-spinner mx-auto"></div>';
+            try {
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:txt}]}]})
+                });
+                const d = await r.json();
+                document.getElementById('modalBody').innerHTML = d.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+            } catch(e) { document.getElementById('modalBody').innerHTML = "AI Service Unavailable (Check API Key)"; }
+        }
+        function auditCode(n, c) { callGemini(`Explain solidity: ${c}`, `Audit: ${n}`); }
+        function generateStrategy() { callGemini(`Analyze impact of ${document.getElementById('minerSlider').value} miners migrating`, "Forecast"); }
+        function closeModal() { document.getElementById('aiModal').style.display='none'; }
+
+        window.onload = () => { 
+            initChart(); 
+            updateMinerCalc(); 
+            setPriceBasis('presale'); 
+            
+            const stakingInput = document.getElementById('stakingAmount');
+            if (stakingInput) {
+                stakingInput.addEventListener('input', calcStake);
+                calcStake(); 
+            }
+            
+            // Add listener to slider manually to ensure it works
+            document.getElementById('minerSlider').addEventListener('input', updateMinerCalc);
+        };
+    </script>
+</body>
+</html>
