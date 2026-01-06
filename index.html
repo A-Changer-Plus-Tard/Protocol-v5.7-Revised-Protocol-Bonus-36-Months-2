@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BlockDag Protocol 5.7 | AI Enabled</title>
+    <title>BlockDag Protocol 5.9 | Definitive Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -60,13 +60,17 @@
         .ai-button-primary { background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); background-size: 200% 200%; animation: gradient-xy 3s ease infinite; color: white; padding: 10px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; z-index: 10; }
         .ai-button-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6); border-color: rgba(255, 255, 255, 0.3); }
         .ai-button-primary::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(transparent, rgba(255,255,255,0.2), transparent); transform: rotate(45deg); animation: shine 3s infinite; pointer-events: none; }
+        
+        .api-key-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; color: #94a3b8; cursor: pointer; transition: all 0.2s; z-index: 50; }
+        .api-key-btn:hover { background: rgba(255,255,255,0.2); color: white; }
 
         @keyframes gradient-xy { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 20% { transform: translateX(100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .loading-spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #6366f1; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Modal */
         #aiModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
         .modal-content { background: #1e293b; margin: 15% auto; padding: 1px; width: 90%; max-width: 500px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #14b8a6); }
         .modal-inner { background: #0f172a; padding: 24px; border-radius: 15px; color: #e2e8f0; max-height: 70vh; overflow-y: auto; }
@@ -78,12 +82,17 @@
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white">
 
+    <!-- API Key Settings Button -->
+    <button onclick="promptApiKey()" class="api-key-btn" title="Set Gemini API Key">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    </button>
+
     <div class="max-w-6xl mx-auto px-4 py-8">
 
-        <!-- HEADER -->
+        <!-- 1. HEADER & TOP -->
         <div class="text-center mb-10">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[10px] font-bold uppercase tracking-widest mb-4">
-                Official Launch Protocol v5.7
+                Official Launch Protocol v5.9
             </div>
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-heading">
                 BlockDag <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Strategic Tokenomics</span>
@@ -148,13 +157,13 @@
                         <div class="absolute -left-[29px] top-0 w-3 h-3 rounded-full bg-slate-600 ring-4 ring-slate-900"></div>
                         <h4 class="text-slate-500 text-xs font-bold uppercase">02 Month 1-3</h4>
                         <p class="text-slate-300 font-bold text-sm">The Cliff (Pause)</p>
-                        <p class="text-slate-400 text-[10px]">NO new releases. 90-day pause allows X10/X30 miners to be delivered.</p>
+                        <p class="text-slate-400 text-[10px]">NO new releases. 3-month pause allows market stabilization.</p>
                     </div>
                     <div class="relative">
                         <div class="absolute -left-[29px] top-0 w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-slate-900"></div>
                         <h4 class="text-emerald-500 text-xs font-bold uppercase">03 Month 4-24</h4>
                         <p class="text-white font-bold text-sm">Linear Vesting</p>
-                        <p class="text-slate-400 text-[10px]">Remaining 97% released daily/weekly (~4.6% per month) over 21 months.</p>
+                        <p class="text-slate-400 text-[10px]">Remaining 97% of Non-Bonus released daily/weekly over 21 months.</p>
                     </div>
                 </div>
             </div>
@@ -216,7 +225,7 @@
                 <div class="bg-slate-800/50 p-3 rounded-lg border-l-4 border-teal-500 border-white/5"><div class="flex justify-between mb-1"><span class="text-white font-bold text-sm">Non-Bonus</span> <span class="text-teal-400 font-bold text-xs">3% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 3m &bull; Vesting: 21m</div></div>
                 <div class="bg-yellow-900/10 p-3 rounded-lg border-l-4 border-yellow-500 border-yellow-500/20"><div class="flex justify-between mb-1"><span class="text-yellow-400 font-bold text-sm">Team Tokens</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 12m</div></div>
                 <div class="bg-orange-900/10 p-3 rounded-lg border-l-4 border-orange-500 border-orange-500/20"><div class="flex justify-between mb-1"><span class="text-orange-400 font-bold text-sm">Bonus Tokens</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 12m &bull; Vesting: 24m</div></div>
-                <div class="bg-blue-900/10 p-3 rounded-lg border-l-4 border-blue-500 border-blue-500/20"><div class="flex justify-between mb-1"><span class="text-blue-400 font-bold text-sm">X1 / Tap Miner</span> <span class="text-slate-500 font-bold text-sm">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 24m</div></div>
+                <div class="bg-blue-900/10 p-3 rounded-lg border-l-4 border-blue-500 border-blue-500/20"><div class="flex justify-between mb-1"><span class="text-blue-400 font-bold text-sm">X1 / Tap Miner</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 24m</div></div>
                 <div class="bg-pink-900/10 p-3 rounded-lg border-l-4 border-pink-500 border-pink-500/20"><div class="flex justify-between mb-1"><span class="text-pink-400 font-bold text-sm">X30 / X100</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 3m &bull; Vesting: None</div></div>
             </div>
         </div>
@@ -271,14 +280,13 @@
         const labels = ['TGE', '6m', '12m', '18m', '24m', '30m', '36m', '42m', '48m'];
         function genLine(s, d) { return [0,6,12,18,24,30,36,42,48].map(m => (m<=s)?0:(m>=s+d)?100:Math.round(((m-s)/d)*100)); }
 
-        // Data Config - UPDATED FOR 5.7
-        const nonBonus = [3, 17, 45, 74, 100, 100, 100, 100, 100];
-        // Team: 24m Lock, 12m Vest. Start m24, End m36.
-        const teamData = [0, 0, 0, 0, 0, 50, 100, 100, 100]; // Solid Yellow
+        // Data Config - UPDATED FOR 5.9 (CORRECTED)
+        const nonBonus = [3, 17, 45, 74, 100, 100, 100, 100, 100]; // 3m cliff, 21m vest (standard)
+        const teamData = [0, 0, 0, 0, 0, 50, 100, 100, 100]; // 24m lock, 12m vest
         
-        // Bonus: 12m Lock, 24m Vest. Ends at 36m.
-        // TGE(0)=0, 6=0, 12=0, 18=25, 24=50, 30=75, 36=100, 42=100, 48=100
-        const bonusData = [0, 0, 0, 25, 50, 75, 100, 100, 100]; // Dashed Orange
+        // Bonus: 12m Lock, 36m Vesting. Ends at 48m.
+        // TGE(0)=0, 6=0, 12=0, 18=17, 24=33, 30=50, 36=67, 42=83, 48=100
+        const bonusData = [0, 0, 0, 17, 33, 50, 67, 83, 100]; 
 
         // X1/Tap: 24m Lock, 24m Vest. Start m24, End m48.
         const x1Data = [0, 0, 0, 0, 0, 25, 50, 75, 100]; // Blue
