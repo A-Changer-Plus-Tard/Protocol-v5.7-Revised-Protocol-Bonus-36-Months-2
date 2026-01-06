@@ -225,7 +225,7 @@
                 <div class="bg-slate-800/50 p-3 rounded-lg border-l-4 border-teal-500 border-white/5"><div class="flex justify-between mb-1"><span class="text-white font-bold text-sm">Non-Bonus</span> <span class="text-teal-400 font-bold text-xs">3% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 3m &bull; Vesting: 21m</div></div>
                 <div class="bg-yellow-900/10 p-3 rounded-lg border-l-4 border-yellow-500 border-yellow-500/20"><div class="flex justify-between mb-1"><span class="text-yellow-400 font-bold text-sm">Team Tokens</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 12m</div></div>
                 <div class="bg-orange-900/10 p-3 rounded-lg border-l-4 border-orange-500 border-orange-500/20"><div class="flex justify-between mb-1"><span class="text-orange-400 font-bold text-sm">Bonus Tokens</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 12m &bull; Vesting: 24m</div></div>
-                <div class="bg-blue-900/10 p-3 rounded-lg border-l-4 border-blue-500 border-blue-500/20"><div class="flex justify-between mb-1"><span class="text-blue-400 font-bold text-sm">X1 / Tap Miner</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 24m</div></div>
+                <div class="bg-blue-900/10 p-3 rounded-lg border-l-4 border-blue-500 border-blue-500/20"><div class="flex justify-between mb-1"><span class="text-blue-400 font-bold text-sm">X1 / Tap Miner</span> <span class="text-slate-500 font-bold text-sm">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 24m &bull; Vesting: 24m</div></div>
                 <div class="bg-pink-900/10 p-3 rounded-lg border-l-4 border-pink-500 border-pink-500/20"><div class="flex justify-between mb-1"><span class="text-pink-400 font-bold text-sm">X30 / X100</span> <span class="text-slate-500 font-bold text-xs">0% TGE</span></div><div class="text-[10px] text-slate-400">Cliff: 3m &bull; Vesting: None</div></div>
             </div>
         </div>
@@ -280,13 +280,13 @@
         const labels = ['TGE', '6m', '12m', '18m', '24m', '30m', '36m', '42m', '48m'];
         function genLine(s, d) { return [0,6,12,18,24,30,36,42,48].map(m => (m<=s)?0:(m>=s+d)?100:Math.round(((m-s)/d)*100)); }
 
-        // Data Config - UPDATED FOR 5.9 (CORRECTED)
+        // Data Config - UPDATED FOR 5.9
         const nonBonus = [3, 17, 45, 74, 100, 100, 100, 100, 100]; // 3m cliff, 21m vest (standard)
         const teamData = [0, 0, 0, 0, 0, 50, 100, 100, 100]; // 24m lock, 12m vest
         
-        // Bonus: 12m Lock, 36m Vesting. Ends at 48m.
-        // TGE(0)=0, 6=0, 12=0, 18=17, 24=33, 30=50, 36=67, 42=83, 48=100
-        const bonusData = [0, 0, 0, 17, 33, 50, 67, 83, 100]; 
+        // Bonus: 12m Lock, 24m Vest. Ends at 36m.
+        // TGE(0)=0, 6=0, 12=0, 18=25, 24=50, 30=75, 36=100, 42=100, 48=100
+        const bonusData = [0, 0, 0, 25, 50, 75, 100, 100, 100]; 
 
         // X1/Tap: 24m Lock, 24m Vest. Start m24, End m48.
         const x1Data = [0, 0, 0, 0, 0, 25, 50, 75, 100]; // Blue
